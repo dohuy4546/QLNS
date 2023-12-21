@@ -10,6 +10,7 @@ class LoaiTaiKhoan(enum.Enum):
     ADMIN = 3
 
 class TaiKhoan(db.Model, UserMixin):
+    __abstract__ = True
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=True)
     username = Column(String(50), nullable=False, unique=True)
@@ -27,16 +28,19 @@ class KhachHang(TaiKhoan):
     sdt = Column(String(10), nullable=True)
     hoten = Column(String(100), nullable=True)
 
+class NhanVien(TaiKhoan):
+    pass
+
 class TheLoai(db.Model):
     id = Column(Integer, primary_key=True)
-    tentheloai = Column(String(100), nullable=False)
+    tentheloai = Column(String(100), nullable=False, unique=True)
 
     def __str__(self):
         return self.tentheloai
 
 class Sach(db.Model):
     id = Column(String(10), primary_key=True)
-    tensach = Column(String(100), nullable=False)
+    tensach = Column(String(100), nullable=False, unique=True)
     gia = Column(Float, default=0)
     image = Column(String(100))
     soluongtonkho = Column(Integer)
@@ -52,3 +56,7 @@ class BaseModel(db.Model):
 class Sach_TheLoai(BaseModel):
     sach_id = Column(String(10), ForeignKey(Sach.id), nullable=False)
     theloai_id = Column(Integer, ForeignKey(TheLoai.id), nullable=False)
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
