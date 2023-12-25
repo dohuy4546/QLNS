@@ -130,14 +130,14 @@ class HoaDon(BaseModel):
     taikhoankhachhang = relationship('TaiKhoanKhachHang', backref='hoadon1', lazy=True)
     taikhoannhanvien = relationship('TaiKhoanNhanVien', backref='hoadon2', lazy=True)
     __table_args__ = (
-        CheckConstraint('user_id_1 IS NOT NULL OR user_id_2 IS NOT NULL'),
+        CheckConstraint('taikhoankhachhang_id IS NOT NULL OR taikhoannhanvien_id IS NOT NULL'),
     )
     tongsoluong = Column(Integer, default=0)
     tongtien = Column(Integer, default=0)
 
 class ChiTietHoaDon(BaseModel):
     hoadon_id = Column(Integer, ForeignKey(HoaDon.id), nullable=False)
-    sach_id = Column(Integer, ForeignKey(Sach.id), nullable=False)
+    sach_id = Column(String(10), ForeignKey(Sach.id), nullable=False)
     soluong = Column(Integer, nullable=False)
 
 
