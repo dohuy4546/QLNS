@@ -43,7 +43,6 @@ class TheLoaiView(AuthenticatedAdmin):
 
 class Sach_TheLoaiView(AuthenticatedAdmin):
     column_list = ['id', 'sach_id', 'theloai_id']
-    form_columns = ['sach', 'theloai']
     can_export = True
 
 

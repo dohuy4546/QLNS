@@ -4,10 +4,10 @@
 
 
 {% if current_user.is_authenticated %}
-<h1 class="text-center text-info">CHÀO MỪNG ĐẾN TRANG QUẢN TRỊ!</h1>
-<h2 class="text-info">Chào {{ current_user.name }}!</h2>
+<h1 class="text-center text-primary">CHÀO MỪNG ĐẾN TRANG QUẢN TRỊ!</h1>
+<h2 class="text-primary">Chào {{ current_user.name }}!</h2>
 {% else %}
-<h1 class="text-center text-success">ĐĂNG NHẬP QUẢN TRỊ</h1>
+<h1 class="text-center text-primary">ĐĂNG NHẬP QUẢN TRỊ</h1>
 <form method="post" action="/admin/login">
   <div class="mb-3 mt-3">
     <label for="username" class="form-label">Tên đăng nhập:</label>
