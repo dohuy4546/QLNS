@@ -26,10 +26,9 @@ class GioiTinh(enum.Enum):
 
 class TaiKhoan(db.Model, UserMixin):
     __abstract__ = True
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     name = Column(String(100), nullable=False)
     username = Column(String(50), nullable=False, unique=True)
-    password = Column(String(50), nullable=False)
+    password = Column(String(1000), nullable=False)
     avatar = Column(String(100),
                     default='https://res.cloudinary.com/dxxwcby8l/image/upload/v1688179242/hclq65mc6so7vdrbp7hz.jpg')
     user_role = Column(Enum(LoaiTaiKhoan))
@@ -39,6 +38,7 @@ class TaiKhoan(db.Model, UserMixin):
 
 
 class TaiKhoanKhachHang(TaiKhoan):
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     email = Column(String(100), unique=True, nullable=False)
     diachi = Column(String(1000), nullable=True)
     sdt = Column(String(10), nullable=True)
@@ -48,10 +48,10 @@ class TaiKhoanKhachHang(TaiKhoan):
         return self.name
 
 
-class GioHang(BaseModel):
-    taikhoankhachhang_id = Column(Integer, ForeignKey(TaiKhoanKhachHang.id), nullable=False)
+class GioHang(db.Model):
+    id = Column(Integer, ForeignKey(TaiKhoanKhachHang.id), primary_key=True)
     taikhoankhachhang = relationship("TaiKhoanKhachHang", back_populates="giohang", uselist=False)
-
+    ngaykhoitao = Column(DateTime, default=datetime.now())
 
 class NhanVien(BaseModel):
     CCCD = Column(String(20), nullable=False, unique=True)
@@ -64,7 +64,7 @@ class NhanVien(BaseModel):
 
 
 class TaiKhoanNhanVien(TaiKhoan):
-    nhanvien_id = Column(Integer, ForeignKey(NhanVien.id), unique=True, nullable=False)
+    id = Column(Integer, ForeignKey(NhanVien.id), primary_key=True)
     nhanvien = relationship("NhanVien", back_populates="taikhoannhanvien", uselist=False)
 
     def __str__(self):
@@ -101,6 +101,7 @@ class Sach(db.Model):
     anhbia = Column(String(100))
     soluongtonkho = Column(Integer)
     ngayphathanh = Column(DateTime, default=datetime.now(), nullable=False)
+    mota = Column(String(5000), nullable=False, default="Sách không có mô tả")
     tacgia = relationship("TacGia", backref="sach1", lazy=True)
     nhaxuatban = relationship("NhaXuatBan", backref="sach2", lazy=True)
     binhluan = relationship("BinhLuan", backref="sach3", lazy=True)
@@ -142,15 +143,16 @@ class ChiTietHoaDon(BaseModel):
 
 
 
-
-
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # 1
+        # nxb1 = NhaXuatBan(tennhaxuatban='Kim Đồng')
+        # tg1 = TacGia(tentacgia='Nguyễn Huệ')
+        # db.session.add_all([nxb1, tg1])
+        # db.session.commit()
         # nv1 = NhanVien(CCCD='1234567', hoten='Nguyen Van A', gioitinh=GioiTinh.Nam)  # 2
         # import hashlib
-        # tk_admin = TaiKhoanNhanVien(name='Nguyen Van A', username='admin', password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()), user_role=LoaiTaiKhoan.ADMIN,
-        #                             nhanvien_id=1)  # 3
+        # tk_admin = TaiKhoanNhanVien(name='Nguyen Van A', username='admin', password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()), user_role=LoaiTaiKhoan.ADMIN, id=1)  # 3
         # db.session.add(tk_admin)
         # db.session.commit()
         # sach1 = Sach(id='VH1234', tensach='Van hoc truyen thong Viet Nam', gia=100000, soluongtonkho=200)

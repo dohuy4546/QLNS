@@ -21,22 +21,35 @@ class AuthenticatedUser(BaseView):
 class SachView(AuthenticatedAdmin):
     column_display_pk = True
     can_create = True
-    column_list = ['id', 'tensach', 'gia', 'anhbia', 'soluongtonkho']
+    column_list = ['id', 'tensach', 'gia', 'soluongtonkho', 'nhaxuatban', 'sach_theloai1']
+    column_labels = {
+        'id': 'ID',
+        'tensach': 'Tên sách',
+        'gia': 'Giá',
+        'soluongtonkho': 'Số lượng tồn kho',
+        'tacgia': 'Tác giả',
+        'sach_theloai1': 'Thể loại',
+        'mota': 'Mô tả',
+        'ngayphathanh': 'Ngày phát hành',
+        'nhaxuatban': 'Nhà xuất bản',
+        'anhbia': 'Ảnh bìa'
+    }
     can_export = True
     column_searchable_list = ['tensach']
     column_filters = ['gia', 'tensach']
     column_editable_list = ['id', 'tensach', 'gia', 'anhbia', 'soluongtonkho']
     details_modal = True
     edit_modal = True
-    form_columns = ['id', 'tensach', 'gia', 'anhbia', 'soluongtonkho']
+    form_columns = ['id', 'tensach', 'tacgia', 'nhaxuatban', 'ngayphathanh', 'gia', 'anhbia', 'soluongtonkho', 'mota']
 
 
 class TheLoaiView(AuthenticatedAdmin):
-    column_list = ['id', 'tentheloai']
+    column_list = ['id', 'tentheloai', 'ngaykhoitao']
     can_export = True
     column_searchable_list = ['tentheloai']
     column_filters = ['tentheloai']
     column_editable_list = ['tentheloai']
+    form_columns = ['tentheloai', 'ngaykhoitao']
     details_modal = True
     edit_modal = True
 
@@ -59,7 +72,7 @@ class LogoutView(AuthenticatedUser):
         return redirect('/admin')
 
 
-admin.add_view(SachView(Sach, db.session))
+admin.add_view(SachView(Sach, db.session, name='Sách'))
 admin.add_view(TheLoaiView(TheLoai, db.session))
 admin.add_view(Sach_TheLoaiView(Sach_TheLoai, db.session))
 admin.add_view((AuthenticatedAdmin(TaiKhoanNhanVien, db.session)))

@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">BÁN HÀNG TRỰC TUYẾN</a>
+        <a class="navbar-brand" href="/">BÁN HÀNG TRỰC TUYẾN</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -15,9 +15,11 @@
                         Thể loại
                       </button>
                       <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Link 1</a></li>
-                        <li><a class="dropdown-item" href="#">Link 2</a></li>
-                        <li><a class="dropdown-item" href="#">Link 3</a></li>
+                        {% for t in theloai %}
+                          <li>
+                              <a class="dropdown-item" href="/?theloai={{t.id}}">{{ t.tentheloai }}</a>
+                          </li>
+                        {% endfor %}
                       </ul>
                     </div>
                 </li>
@@ -27,9 +29,9 @@
                 <input class="form-control me-2" type="text" name="kw" placeholder="Nhập từ khóa...">
                 <button class="btn btn-primary" type="submit">Tìm</button>
             </form>
-            <a href="#" class="me-2 text-white text-decoration-none text-hover">Đăng nhập</a>
+            <a href="/dangnhap" class="me-2 text-white text-decoration-none text-hover">Đăng nhập</a>
             <p class="text-white me-2 mb-0 mt-0">/</p>
-            <a href="#" class="me-2 text-white text-decoration-none text-hover">Đăng ký</a>
+            <a href="/dangky" class="me-2 text-white text-decoration-none text-hover">Đăng ký</a>
         </div>
     </div>
 </nav>
