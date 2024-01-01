@@ -18,6 +18,10 @@ class AuthenticatedUser(BaseView):
         return current_user.is_authenticated
 
 
+class AuthenticatedAdminBaseView(BaseView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.user_role == LoaiTaiKhoan.ADMIN
+
 class SachView(AuthenticatedAdmin):
     column_display_pk = True
     can_create = True
@@ -64,7 +68,7 @@ class NhanVienView(AuthenticatedAdmin):
     form_columns = ['CCCD', 'hoten', 'gioitinh']
 
 
-class LogoutView(AuthenticatedUser):
+class LogoutView(AuthenticatedAdminBaseView):
     @expose("/")
     def index(self):
         logout_user()

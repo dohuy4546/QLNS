@@ -40,13 +40,22 @@ class TaiKhoan(db.Model, UserMixin):
 class TaiKhoanKhachHang(TaiKhoan):
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     email = Column(String(100), unique=True, nullable=False)
-    diachi = Column(String(1000), nullable=True)
-    sdt = Column(String(10), nullable=True)
     giohang = relationship("GioHang", back_populates="taikhoankhachhang", uselist=False)
     binhluan = relationship("BinhLuan", backref="taikhoankhachhang2", lazy=True)
     def __str__(self):
         return self.name
 
+class DiaChi(BaseModel):
+    diachi = Column(String(1000), nullable=False)
+    taikhoankhachhang_id = Column(Integer, ForeignKey(TaiKhoanKhachHang.id), nullable=False)
+    taikhoankhachhang = relationship("TaiKhoanKhachHang", backref="diachi", lazy=True)
+    hoadon = relationship('HoaDon', backref='diachi', lazy=True)
+
+class SDT(BaseModel):
+    sdt = Column(String(10), nullable=False)
+    taikhoankhachhang_id = Column(Integer, ForeignKey(TaiKhoanKhachHang.id), nullable=False)
+    taikhoankhachhang = relationship("TaiKhoanKhachHang", backref="sdt")
+    hoadon = relationship('HoaDon', backref='sdt', lazy=True)
 
 class GioHang(db.Model):
     id = Column(Integer, ForeignKey(TaiKhoanKhachHang.id), primary_key=True)
@@ -98,7 +107,7 @@ class Sach(db.Model):
     tacgia_id = Column(Integer, ForeignKey(TacGia.id), nullable=False)
     nhaxuatban_id = Column(Integer, ForeignKey(NhaXuatBan.id), nullable=False)
     gia = Column(Float, default=0)
-    anhbia = Column(String(100))
+    anhbia = Column(String(2000))
     soluongtonkho = Column(Integer)
     ngayphathanh = Column(DateTime, default=datetime.now(), nullable=False)
     mota = Column(String(5000), nullable=False, default="Sách không có mô tả")
@@ -116,7 +125,7 @@ class BinhLuan(BaseModel):
 class GioHang_Sach(BaseModel):
     giohang_id = Column(Integer, ForeignKey(GioHang.id), nullable=False)
     sach_id = Column(String(10), ForeignKey(Sach.id), nullable=False)
-
+    soluong = Column(Integer, nullable=False)
 
 class Sach_TheLoai(BaseModel):
     __tablename__ = 'sach_theloai'
@@ -125,9 +134,13 @@ class Sach_TheLoai(BaseModel):
     sach = relationship('Sach', backref='sach_theloai1', lazy=True)
     theloai = relationship('TheLoai', backref='sach_theloai2', lazy=True)
 
-class HoaDon(BaseModel):
+class HoaDon(db.Model):
+    id = Column(String(6), primary_key=True, nullable=False)
     taikhoankhachhang_id = Column(Integer, ForeignKey(TaiKhoanKhachHang.id), nullable=True)
     taikhoannhanvien_id = Column(Integer, ForeignKey(TaiKhoanNhanVien.id), nullable=True)
+    diachi_id = Column(Integer, ForeignKey(DiaChi.id), nullable=True)
+    sdt_id = Column(Integer, ForeignKey(SDT.id), nullable=True)
+    ngaykhoitao = Column(DateTime, default=datetime.now())
     taikhoankhachhang = relationship('TaiKhoanKhachHang', backref='hoadon1', lazy=True)
     taikhoannhanvien = relationship('TaiKhoanNhanVien', backref='hoadon2', lazy=True)
     __table_args__ = (
@@ -137,7 +150,7 @@ class HoaDon(BaseModel):
     tongtien = Column(Integer, default=0)
 
 class ChiTietHoaDon(BaseModel):
-    hoadon_id = Column(Integer, ForeignKey(HoaDon.id), nullable=False)
+    hoadon_id = Column(String(6), ForeignKey(HoaDon.id), nullable=False)
     sach_id = Column(String(10), ForeignKey(Sach.id), nullable=False)
     soluong = Column(Integer, nullable=False)
 

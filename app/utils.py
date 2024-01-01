@@ -1,12 +1,12 @@
 import smtplib
 from email.message import EmailMessage
 
-def send_mail(mailto, otp):
+def send_mail(mailto, msg):
     email_from = 'dohuy4547@gmail.com' #email người gửi
     email_to = mailto # email người nhận
     password = 'imha kzyy wzne oitx' # password phải sinh ra trong bảo vệ 2 lớp bảo mật của google
     subject = 'Email xác nhận tài khoản'
-    body = 'Mã xác nhận của bạn là: ' + str(otp)
+    body = msg
     em = EmailMessage()
     em['From'] = email_from
     em['To'] = email_to
@@ -18,3 +18,17 @@ def send_mail(mailto, otp):
         smtp.login(email_from, password)  # Đăng nhập vào tài khoản email sender
         smtp.send_message(em) # Gửi mail
         print('Check your email ;)')
+
+
+def count_cart(cart):
+    total_amount, total_quantiy = 0, 0
+
+    if cart:
+        for c in cart.values():
+            total_quantiy += c['quantity']
+            total_amount += c['quantity']*c['price']
+
+    return {
+        "total_amount": total_amount,
+        "total_quantity": total_quantiy
+    }

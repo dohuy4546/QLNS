@@ -6,14 +6,14 @@
           class="img-fluid" alt="Sample image">
       </div>
       <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
-        <form>
+        <form action="/dangnhap" method="post">
           <div class="d-flex flex-row align-items-center justify-content-center justify-content-lg-start">
             <p class="lead fw-normal mb-0 me-3">Đăng nhập bằng</p>
             <button type="button" class="btn btn-primary btn-floating mx-1 rounded-circle" style="width: 40px;">
               <i class="fa fa-facebook-f"></i>
             </button>
 
-            <button type="button" class="btn btn-primary btn-floating mx-1 rounded-circle" style="width: 40px;">
+            <button type="button" class="btn btn-danger btn-floating mx-1 rounded-circle" style="width: 40px;">
               <i class="fa fa-google"></i>
             </button>
           </div>
@@ -25,14 +25,14 @@
           <!-- Email input -->
           <div class="form-outline mb-4">
             <input type="email" id="email" class="form-control form-control-lg"
-              placeholder="Nhập địa chỉ email..." />
+              placeholder="Nhập địa chỉ email..." name="email"/>
             <label class="form-label" for="email">Địa chỉ email</label>
           </div>
 
           <!-- Password input -->
           <div class="form-outline mb-3">
             <input type="password" id="password" class="form-control form-control-lg"
-              placeholder="Nhập mật khẩu..." />
+              placeholder="Nhập mật khẩu..."  name="password"/>
             <label class="form-label" for="password">Mật khẩu</label>
           </div>
 
