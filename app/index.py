@@ -216,7 +216,11 @@ def delete_cart(product_id):
 def gio_hang():
     giohang = dao.get_gio_hang(current_user.id)
     msg = request.args.get('msg')
-    return render_template("giohang.html", gioHang= giohang, msg=msg)
+    soluongtonkho = {}
+    for g in giohang.values():
+        sach = dao.get_sach_by_id(g['sach_id'])
+        soluongtonkho[g['sach_id']] = sach.soluongtonkho
+    return render_template("giohang.html", gioHang= giohang, msg=msg, soluongtonkho=soluongtonkho)
 
 @app.route('/vnpay/payment', methods=['GET', 'POST'])
 def payment():
@@ -295,7 +299,7 @@ def payment_return():
                 dao.lap_hoa_don(id=order_id, taikhoankhachhang_id=current_user.id, diachi=session['diachi'], sdt=session['sdt'])
                 del session['diachi']
                 del session['sdt']
-                return redirect(url_for("giohang", msg="Chúc mừng bạn đã đặt hàng thành công"))
+                return redirect(url_for("gio_hang", msg="Chúc mừng bạn đã đặt hàng thành công"))
             else:
                 return render_template("payment_return.html", title="Kết quả thanh toán",
                                        result="Lỗi", order_id=order_id, amount=amount,
@@ -314,9 +318,10 @@ def check_thong_tin():
     giohang = dao.get_gio_hang(current_user.id)
     for g in giohang.values():
         check = dao.check_hang_ton_kho(g['sach_id'], g['soluong'])
+        print(check)
         if check is False:
             msg = "Có vẻ đã có lỗi xảy ra. Sách " + str(g['tensach']) + " không đủ hàng tồn kho."
-            return redirect(url_for("giohang", msg=msg))
+            return redirect(url_for("gio_hang", msg=msg))
     sdt = request.form.get('sdt')
     diachi = request.form.get('diachi')
     phuongthucthanhtoan = request.form.get('phuongthucthanhtoan')
@@ -334,7 +339,7 @@ def check_thong_tin():
                + str(sdt) + "\n" + "Cảm ơn vì đã đặt hàng. Chúng tôi sẽ làm việc nhanh nhất có thể.")
         utils.send_mail(khachhang.email, msg, subject)
         dao.lap_hoa_don(id=hoadon_id, taikhoankhachhang_id=current_user.id, diachi=diachi, sdt=sdt)
-        return redirect(url_for("giohang", msg="Chúc mừng bạn đã đặt hàng thành công"))
+        return redirect(url_for("gio_hang", msg="Chúc mừng bạn đã đặt hàng thành công"))
 
 @app.route('/sach/<sach_id>')
 def chi_tiet_san_pham(sach_id):

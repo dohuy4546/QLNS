@@ -42,9 +42,12 @@
             </div>
         </div>
     </div>
+
     <div class="row ms-md-4 mt-4">
+        <hr class="mb-2">
         <h3>Mô tả - đánh giá</h3>
         <p>{{ sach.mota }}</p>
+        <hr class="mt-2">
     </div>
     <div class="row ms-md-4 mt-4">
         <h3>Bình luận</h3>
@@ -57,6 +60,7 @@
                         onclick="addReview('{{ sach['id'] }}', {% if current_user.is_authenticated and current_user.user_role|string == 'LoaiTaiKhoan.KHACHHANG' %}{{ current_user.id }}{% else %}''{% endif %})">Đánh giá</button>
             </div>
         </div>
+        <hr class="mt-2">
     </div>
 
     {% for b in binhluan.values() %}

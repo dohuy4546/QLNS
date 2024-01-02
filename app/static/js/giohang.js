@@ -8,33 +8,33 @@ function addToCart(id, name, price, current_user_id, soluongtonkho, soluong, chu
         if (soluong == 0){
             let value = document.getElementById("soluong")
             soluong = value.value
-            if (soluong > soluongtonkho) {
+        }
+        if (soluong > soluongtonkho) {
                 alert("Bạn đã nhập quá số lượng tồn kho. Xin vui lòng nhập lại")
-            }
+        }else{
+            fetch("/api/cart", {
+                method: "post",
+                body: JSON.stringify({
+                    "sach_id": id,
+                    "tensach": name,
+                    "gia": price,
+                    "current_user_id": current_user_id,
+                    "soluong": soluong
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+                }).then(function(res) {
+                    return res.json();
+                }).then(function(data) {
+                    let carts = document.getElementsByClassName("cart-counter");
+                    for (let d of carts)
+                        d.innerText = data.total_quantity;
+                    if (chuyentrang == 'True'){
+                        window.location.href = "/giohang"
+                    }
+                });
         }
-        fetch("/api/cart", {
-        method: "post",
-        body: JSON.stringify({
-            "sach_id": id,
-            "tensach": name,
-            "gia": price,
-            "current_user_id": current_user_id,
-            "soluong": soluong
-        }),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-        }).then(function(res) {
-            return res.json();
-        }).then(function(data) {
-            let carts = document.getElementsByClassName("cart-counter");
-            for (let d of carts)
-                d.innerText = data.total_quantity;
-            if (chuyentrang == 'True'){
-                window.location.href = "/giohang"
-            }
-        });
-
     }
 }
 

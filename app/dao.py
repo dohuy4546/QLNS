@@ -133,14 +133,14 @@ def get_total_gio_hang(khachhang_id):
     }
 
 
-def add_gio_hang(khachhang_id, sach_id, soluong):
+def add_gio_hang(khachhang_id, sach_id, soluong=1):
     giohang = GioHang_Sach.query.filter(GioHang_Sach.giohang_id.__eq__(khachhang_id)).filter(
         GioHang_Sach.sach_id.__eq__(sach_id)).first()
     if giohang:
         giohang.soluong += soluong
         db.session.commit()
     else:
-        giohang_sach = GioHang_Sach(giohang_id=khachhang_id, sach_id=sach_id, soluong=1)
+        giohang_sach = GioHang_Sach(giohang_id=khachhang_id, sach_id=sach_id, soluong=soluong)
         db.session.add(giohang_sach)
         db.session.commit()
 

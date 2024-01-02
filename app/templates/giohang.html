@@ -18,6 +18,7 @@
                 <th></th>
                 <th>Tên sản phẩm</th>
                 <th>Đơn giá</th>
+                <th>Kho còn lại</th>
                 <th>Số lượng</th>
                 <th></th>
             </tr>
@@ -26,6 +27,7 @@
                 <td><img src="{{ g.anhbia }}" alt="" style="width: 100px; height: 100px;"></td>
                 <td>{{ g.tensach }}</td>
                 <td>{{ "{:,.0f}".format(g.gia) }} VNĐ</td>
+                <td>{{ soluongtonkho[g.sach_id] }}</td>
                 <td>
                     <input type="number" onblur="updateCart('{{ g.sach_id }}', this)" value="{{ g.soluong }}"
                            class="form-control"/>
