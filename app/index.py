@@ -4,7 +4,7 @@ import string
 from datetime import datetime
 
 from flask import redirect, render_template, request, session, jsonify, url_for, flash
-from flask_login import login_user, logout_user, current_user
+from flask_login import login_user, logout_user, current_user, login_required
 from app import app, login, dao, utils
 from app.models import LoaiTaiKhoan, TaiKhoanNhanVien
 from app.vnpay import vnpay
@@ -89,7 +89,7 @@ def admin_login():
 
 
 @app.route('/dangnhap', methods=['get', 'post'])
-def dangnhap():
+def dang_nhap():
     msg = request.args.get('msg', '')
     if request.method == "GET":
         if msg != '':
@@ -98,17 +98,23 @@ def dangnhap():
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
+        next_page = request.args.get('next')
         user = dao.auth_user(username=None, password=password, loaitaikhoan=LoaiTaiKhoan.KHACHHANG, email=email)
         if type(user) is str:
             return render_template('dangnhap.html', msg=user)
         else:
             login_user(user=user)
             session['user_role'] = "KHACHHANG"
+
+            print(next_page)
+            if next_page:
+                print("hello")
+                return redirect(next_page)
             return redirect('/')
 
 
 @app.route('/dangxuat')
-def dangxuat():
+def dang_xuat():
     logout_user()
     del session['user_role']
     return redirect('/')
@@ -124,7 +130,8 @@ def otp():
     otp = str(otp)
     if request.method == "GET":
         msg = "Mã xác thực tài khoản của bạn là: " + otp
-        utils.send_mail(email, msg)
+        subject = "Email xác nhận tài khoản"
+        utils.send_mail(email, msg, subject)
         return render_template("otp.html")
     if request.method == "POST":
         input_otp = request.form.get('input_otp')
@@ -136,13 +143,13 @@ def otp():
             del session['email']
             del session['username']
             del session['password']
-            return redirect(url_for('dangnhap', msg="Tài khoản đã được dăng ký thành công!"))
+            return redirect(url_for('dang_nhap', msg="Tài khoản đã được dăng ký thành công!"))
         else:
             return render_template("otp.html", msg="Nhập sai mã otp")
 
 
 @app.route('/dangky', methods=['get', 'post'])
-def dangky():
+def dang_ky():
     if request.method == "GET":
         return render_template('dangky.html')
     if request.method == "POST":
@@ -168,8 +175,9 @@ def add_to_cart():
     data = request.json
 
     sach_id = str(data.get("sach_id"))
+    soluong = int(data.get("soluong"))
     khachhang_id = current_user.id
-    dao.add_gio_hang(khachhang_id, sach_id)
+    dao.add_gio_hang(khachhang_id, sach_id, soluong)
 
     """
         {
@@ -205,7 +213,7 @@ def delete_cart(product_id):
     return jsonify(dao.get_total_gio_hang(current_user.id))
 
 @app.route('/giohang')
-def giohang():
+def gio_hang():
     giohang = dao.get_gio_hang(current_user.id)
     msg = request.args.get('msg')
     return render_template("giohang.html", gioHang= giohang, msg=msg)
@@ -278,10 +286,16 @@ def payment_return():
 
         if vnp.validate_response("FCSMFKVRWSMMEXPIZQAVFGPUXTGVYUGS"):  # Thay YOUR_HASH_SECRET_KEY bằng secret key của bạn
             if vnp_ResponseCode == "00":
-                return render_template("payment_return.html", title="Kết quả thanh toán",
-                                       result="Thành công", order_id=order_id, amount=amount,
-                                       order_desc=order_desc, vnp_TransactionNo=vnp_TransactionNo,
-                                       vnp_ResponseCode=vnp_ResponseCode)
+                msg = ("Đơn hàng " + order_id + " của bạn đã được thanh toán thành công.\n" + "Đơn hàng sẽ được gửi đến "
+                       + str(session['diachi']) + ".\n" + "Số điện thoại liên lạc của đơn hàng: "
+                       + str(session['sdt']) + "\n" + "Cảm ơn vì đã đặt hàng. Chúng tôi sẽ làm việc nhanh nhất có thể.")
+                khachhang = dao.get_tk_khach_hang_by_id(current_user.id)
+                subject = "Xác nhận thông tin thanh toán đơn hàng"
+                utils.send_mail(khachhang.email, msg, subject)
+                dao.lap_hoa_don(id=order_id, taikhoankhachhang_id=current_user.id, diachi=session['diachi'], sdt=session['sdt'])
+                del session['diachi']
+                del session['sdt']
+                return redirect(url_for("giohang", msg="Chúc mừng bạn đã đặt hàng thành công"))
             else:
                 return render_template("payment_return.html", title="Kết quả thanh toán",
                                        result="Lỗi", order_id=order_id, amount=amount,
@@ -296,7 +310,7 @@ def payment_return():
         return render_template("payment_return.html", title="Kết quả thanh toán", result="")
 
 @app.route('/checkthongtin', methods=['post'])
-def checkthongtin():
+def check_thong_tin():
     giohang = dao.get_gio_hang(current_user.id)
     for g in giohang.values():
         check = dao.check_hang_ton_kho(g['sach_id'], g['soluong'])
@@ -314,10 +328,35 @@ def checkthongtin():
         random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
         hoadon_id = str(current_user.id) + random_string
         khachhang = dao.get_tk_khach_hang_by_id(current_user.id)
-        msg = "Đơn hàng " + hoadon_id + " của bạn đã được thanh toán thành công"
-        utils.send_mail(khachhang.email, msg)
+        subject = "Xác nhận thông tin thanh toán đơn hàng"
+        msg = ("Đơn hàng " + hoadon_id + " của bạn đã được thanh toán thành công.\n" + "Đơn hàng sẽ được gửi đến "
+               + str(diachi) + ".\n" + "Số điện thoại liên lạc của đơn hàng: "
+               + str(sdt) + "\n" + "Cảm ơn vì đã đặt hàng. Chúng tôi sẽ làm việc nhanh nhất có thể.")
+        utils.send_mail(khachhang.email, msg, subject)
         dao.lap_hoa_don(id=hoadon_id, taikhoankhachhang_id=current_user.id, diachi=diachi, sdt=sdt)
         return redirect(url_for("giohang", msg="Chúc mừng bạn đã đặt hàng thành công"))
+
+@app.route('/sach/<sach_id>')
+def chi_tiet_san_pham(sach_id):
+    print(sach_id)
+    sach = dao.get_sach_by_id(sach_id)
+    tacgia = dao.get_tac_gia_by_id(sach.tacgia_id)
+    nhaxuatban = dao.get_nha_xuat_ban_by_id(sach.nhaxuatban_id)
+    theloai = dao.get_the_loai_sach_by_sach_id(sach_id)
+    binhluan = dao.get_binh_luan(sach_id)
+    return render_template('chitietsanpham.html', sach=sach, tacgia=tacgia, nhaxuatban=nhaxuatban, theLoai=theloai, binhluan=binhluan)
+
+@app.route('/api/binhluan', methods=['post'])
+@login_required
+def them_binh_luan():
+    data = request.json
+    sach_id = str(data.get("sach_id"))
+    khachhang_id = current_user.id
+    binhluan = str(data.get("binhluan"))
+    check = dao.check_binh_luan(sach_id, khachhang_id)
+    if check is True:
+        dao.them_binh_luan(sach_id, khachhang_id, binhluan)
+    return jsonify(check)
 
 @login.user_loader
 def get_user(user_id):

@@ -1,16 +1,25 @@
-function addToCart(id, name, price, current_user_id) {
-    if (current_user_id == undefined){
+function addToCart(id, name, price, current_user_id, soluongtonkho, soluong, chuyentrang) {
+    if (current_user_id == ''){
+        pathname = window.location.pathname
         let msg = "Bạn cần phải đăng nhập để sử dụng tính năng này!"
-        window.location.href = "/dangnhap?msg="+msg
+        window.location.href = "/dangnhap?msg="+msg+"&next="+pathname
     }
     else{
+        if (soluong == 0){
+            let value = document.getElementById("soluong")
+            soluong = value.value
+            if (soluong > soluongtonkho) {
+                alert("Bạn đã nhập quá số lượng tồn kho. Xin vui lòng nhập lại")
+            }
+        }
         fetch("/api/cart", {
         method: "post",
         body: JSON.stringify({
             "sach_id": id,
             "tensach": name,
             "gia": price,
-            "current_user_id": current_user_id
+            "current_user_id": current_user_id,
+            "soluong": soluong
         }),
         headers: {
             'Content-Type': 'application/json'
@@ -21,7 +30,11 @@ function addToCart(id, name, price, current_user_id) {
             let carts = document.getElementsByClassName("cart-counter");
             for (let d of carts)
                 d.innerText = data.total_quantity;
+            if (chuyentrang == 'True'){
+                window.location.href = "/giohang"
+            }
         });
+
     }
 }
 

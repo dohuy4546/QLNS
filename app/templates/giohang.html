@@ -7,9 +7,12 @@
 <div class="alert alert-info mt-3">{{msg}}</div>
 {% endif %}
 <div class="row">
+    {% if giohang.total_quantity == 0 %}
+    <h1 class="text-center text-info mt-1">GIỎ HÀNG</h1>
+    {% endif %}
     <div class="col-md-8 col-sm-12">
-        <h1 class="text-center text-info mt-1">GIỎ HÀNG</h1>
         {% if giohang.total_quantity != 0 %}
+        <h1 class="text-center text-info mt-1">GIỎ HÀNG</h1>
         <table class="table">
             <tr>
                 <th></th>
@@ -38,8 +41,9 @@
             <h3>Tổng tiền: <span class="cart-amount">{{ "{:,.0f}".format(giohang.total_amount) }}</span> VNĐ</h3>
             <h3>Tổng số lượng: <span class="cart-counter">{{giohang.total_quantity}}</span></h3>
         </div>
+        {% endif %}
     </div>
-
+    {% if giohang.total_quantity != 0 %}
     <div class="col-md-4 col-sm-12 d-flex flex-column align-items-center justify-content-center" id="form-thong-tin">
         <h3>Nhập thông tin đơn hàng</h3>
         <form action="/checkthongtin" method="post" class="p-3" id="form-thanh-toan">
@@ -74,8 +78,8 @@
             </div>
         </form>
     </div>
+    {% else %}
+    <div class="alert alert-info">KHÔNG có sản phẩm trong giỏ!</div>
+    {% endif %}
 </div>
-{% else %}
-<div class="alert alert-info">KHÔNG có sản phẩm trong giỏ!</div>
-{% endif %}
 {% endblock %}

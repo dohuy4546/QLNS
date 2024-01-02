@@ -1,11 +1,11 @@
 import smtplib
 from email.message import EmailMessage
 
-def send_mail(mailto, msg):
+def send_mail(mailto, msg, subject):
     email_from = 'dohuy4547@gmail.com' #email người gửi
     email_to = mailto # email người nhận
     password = 'imha kzyy wzne oitx' # password phải sinh ra trong bảo vệ 2 lớp bảo mật của google
-    subject = 'Email xác nhận tài khoản'
+    subject = subject
     body = msg
     em = EmailMessage()
     em['From'] = email_from

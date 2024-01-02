@@ -1,5 +1,6 @@
 <section class="container">
     {% for t in theloai %}
+    {% if sach[t.id] %}
     <div class="row">
         <div class="section-title text-center clearfix p-3">
             <h2>
@@ -11,5 +12,6 @@
         {% endfor %}
         <a href="/?theloai={{t.id}}" class="text-end text-danger link-hover mt-2">Xem thêm >></a>
     </div>
+    {% endif %}
     {% endfor %}
 </section>

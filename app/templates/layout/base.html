@@ -49,6 +49,9 @@
             font-weight: 400;
             text-align: center;
         }
+        * {
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
@@ -63,5 +66,6 @@
 {% include 'layout/footer.html' %}
 
 <script src="{{ url_for('static', filename='js/giohang.js') }}"></script>
+<script src="{{ url_for('static', filename='js/binhluan.js') }}"></script>
 </body>
 </html>

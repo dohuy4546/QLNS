@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/">BÁN HÀNG TRỰC TUYẾN</a>
+        <a class="navbar-brand" href="/">NHÀ SÁCH KIM CƯƠNG</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -37,7 +37,7 @@
                 <button class="btn btn-primary" type="submit">Tìm</button>
             </form>
             {% if current_user.is_authenticated and current_user.user_role|string == "LoaiTaiKhoan.KHACHHANG"%}
-            <a href="{{ url_for('dangxuat') }}" class="me-2 text-white text-decoration-none text-hover p-2 d-block">Đăng
+            <a href="{{ url_for('dang_xuat') }}" class="me-2 text-white text-decoration-none text-hover p-2 d-block">Đăng
                 xuất</a>
             {% else %}
             <a href="/dangnhap" class="me-2 text-white text-decoration-none text-hover">Đăng nhập</a>
