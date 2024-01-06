@@ -421,14 +421,21 @@ def check_thong_tin():
 
 @app.route('/sach/<sach_id>')
 def chi_tiet_san_pham(sach_id):
-    print(sach_id)
+    page = request.args.get('page')
+    page_size = 4
+    if page:
+        page = int(page)
+    else:
+        page = 1
     sach = dao.get_sach_by_id(sach_id)
     tacgia = dao.get_tac_gia_by_id(sach.tacgia_id)
     nhaxuatban = dao.get_nha_xuat_ban_by_id(sach.nhaxuatban_id)
     theloai = dao.get_the_loai_sach_by_sach_id(sach_id)
-    binhluan = dao.get_binh_luan(sach_id)
+    binhluan = dao.get_binh_luan(sach_id, page=page, page_size=page_size)
+    num = len(dao.get_binh_luan(sach_id))
+    soluongdaban = dao.get_so_luong_da_ban(sach_id)
     return render_template('chitietsanpham.html', sach=sach, tacgia=tacgia, nhaxuatban=nhaxuatban, theLoai=theloai,
-                           binhluan=binhluan)
+                           binhluan=binhluan, pages=math.ceil(num / page_size), page=page, soluongbinhluan=num, soluongdaban=soluongdaban)
 
 
 @app.route('/api/binhluan', methods=['post'])

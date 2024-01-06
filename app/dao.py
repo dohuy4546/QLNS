@@ -5,7 +5,7 @@ from sqlalchemy import func
 import hashlib
 
 
-def get_sach(kw, theloai_id, page=None, page_size=None, min_price=None, max_price=None, order=None):
+def get_sach(kw=None, theloai_id=None, page=None, page_size=None, min_price=None, max_price=None, order=None):
     sachs = Sach.query
     if kw:
         sachs = sachs.filter(Sach.tensach.contains(kw))
@@ -269,8 +269,15 @@ def them_binh_luan(sach_id, khachhang_id, binhluan):
     db.session.commit()
 
 
-def get_binh_luan(sach_id):
-    binhluan = BinhLuan.query.filter(BinhLuan.sach_id.__eq__(sach_id)).all()
+def get_binh_luan(sach_id, page=None, page_size=None):
+    binhluan = BinhLuan.query.filter(BinhLuan.sach_id.__eq__(sach_id))
+    if page:
+        page = int(page)
+        if page_size is None:
+            page_size = app.config['PAGE_SIZE']
+        start = (page - 1) * page_size
+        binhluan = binhluan.slice(start, start + page_size)
+    binhluan = binhluan.all()
     binhLuan = {}
     for b in binhluan:
         khachhang = TaiKhoanKhachHang.query.get(b.taikhoankhachhang_id)
@@ -281,7 +288,37 @@ def get_binh_luan(sach_id):
         }
     return binhLuan
 
+def get_so_luong_da_ban(sach_id):
+    result = (
+            db.session.query(func.sum(ChiTietHoaDon.soluong))
+            .filter(ChiTietHoaDon.sach_id == sach_id)
+            .first()
+    )
+    if result and result[0] is not None:
+        total_quantity = result[0]
+    else:
+        total_quantity = 0
+    return total_quantity
+
+def revenue_stats(kw=None):
+    query = db.session.query(Sach.id, Sach.tensach, func.sum(ChiTietHoaDon.soluong*Sach.gia))\
+                      .join(ChiTietHoaDon, ChiTietHoaDon.sach_id==Sach.id)
+
+    if kw:
+        query = query.filter(Sach.tensach.contains(kw))
+
+    return query.group_by(Sach.id).all()
+
+
+def revenue_mon_stats(year=2024):
+    query = db.session.query(func.extract('month', HoaDon.ngaykhoitao),
+                             func.sum(ChiTietHoaDon.soluong*Sach.gia))\
+                      .join(ChiTietHoaDon, ChiTietHoaDon.hoadon_id.__eq__(HoaDon.id))\
+                      .join(Sach, Sach.id.__eq__(ChiTietHoaDon.sach_id))\
+                      .filter(func.extract('year', HoaDon.ngaykhoitao).__eq__(year))\
+                      .group_by(func.extract('month', HoaDon.ngaykhoitao))
+    return query.all()
 
 if __name__ == '__main__':
     with app.app_context():
-        print(get_sach(kw=None, theloai_id=1, page=None, min_price=0, max_price=100000))
+        print(get_so_luong_da_ban('VH127'))
