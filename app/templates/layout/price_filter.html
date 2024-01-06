@@ -2,46 +2,49 @@
     <form class="mt-3">
         <div class="mb-3">
             <label class="form-label bg-primary w-100 p-2 rounded-1">Khoảng giá:</label>
-
             <div class="form-check">
-                <input class="form-check-input" type="radio" name="priceRange" id="range0" value="Tất cả" checked>
-                <label class="form-check-label" for="range1">Tất cả</label>
+                <input class="form-check-input" type="radio" name="priceRange" id="range0" value="0:max"
+                       {% if not price_range %} checked {% endif %}
+                       {% if price_range== '0:max' %} checked {% endif %}>
+                <label class="form-check-label" for="range0">Tất cả</label>
             </div>
 
             <div class="form-check">
-                <input class="form-check-input" type="radio" name="priceRange" id="range1" value="Nhỏ hơn 100,000₫">
+                <input class="form-check-input" type="radio" name="priceRange" id="range1" value="0:100000" {% if
+                       price_range== '0:100000' %} checked {% endif %}>
                 <label class="form-check-label" for="range1">Nhỏ hơn 100,000₫</label>
             </div>
 
             <div class="form-check">
                 <input class="form-check-input" type="radio" name="priceRange" id="range2"
-                       value="Từ 100,000₫ - 200,000₫">
+                       value="100000:200000" {% if price_range== '100000:200000' %} checked {% endif %}>
                 <label class="form-check-label" for="range2">Từ 100,000₫ - 200,000₫</label>
             </div>
 
             <div class="form-check">
                 <input class="form-check-input" type="radio" name="priceRange" id="range3"
-                       value="Từ 200,000₫ - 300,000₫">
+                       value="200000:300000" {% if price_range== '200000:300000' %} checked {% endif %}>
                 <label class="form-check-label" for="range3">Từ 200,000₫ - 300,000₫</label>
             </div>
             <div class="form-check">
                 <input class="form-check-input" type="radio" name="priceRange" id="range4"
-                       value="Từ 300,000₫ - 400,000₫">
+                       value="300000:400000" {% if price_range== '300000:400000' %} checked {% endif %}>
                 <label class="form-check-label" for="range4">Từ 300,000₫ - 400,000₫</label>
             </div>
             <div class="form-check">
                 <input class="form-check-input" type="radio" name="priceRange" id="range5"
-                       value="Từ 400,000₫ - 500,000₫">
+                       value="400000:500000" {% if price_range== '400000:500000' %} checked {% endif %}>
                 <label class="form-check-label" for="range5">Từ 400,000₫ - 500,000₫</label>
             </div>
             <div class="form-check">
-                <input class="form-check-input" type="radio" name="priceRange" id="range6" value="Lớn hơn 500,000₫">
+                <input class="form-check-input" type="radio" name="priceRange" id="range6"
+                       value="500000:max" {% if price_range== '500000:max' %} checked {% endif %}>
                 <label class="form-check-label" for="range6">Lớn hơn 500,000₫</label>
             </div>
 
             <!-- Add more radio buttons for different price ranges as needed -->
         </div>
 
-        <button type="submit" class="btn btn-primary">Lọc</button>
+        <button type="button" class="btn btn-primary" onclick="price_filter()">Lọc</button>
     </form>
 </div>

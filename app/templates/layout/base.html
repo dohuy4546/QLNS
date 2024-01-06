@@ -57,7 +57,8 @@
 <body>
 
 {% include 'layout/header.html' %}
-
+{% block outside_content %}
+{% endblock %}
 <div class="container" style="min-height: 80vh;">
     {% block content %}
     {% endblock %}
@@ -67,5 +68,7 @@
 
 <script src="{{ url_for('static', filename='js/giohang.js') }}"></script>
 <script src="{{ url_for('static', filename='js/binhluan.js') }}"></script>
+<script src="{{ url_for('static', filename='js/quenmatkhau.js') }}"></script>
+<script src="{{ url_for('static', filename='js/filter.js') }}"></script>
 </body>
 </html>

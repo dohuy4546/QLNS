@@ -8,15 +8,15 @@
             <h2 class="col-md-7 p-2">{{ t.tentheloai }}</h2>
             <div class="col-md-5 d-flex align-items-center justify-content-end">
                 <p class="p-3">Sắp xếp</p>
-                <select name="SortBy" id="SortBy" style="transform: translateY(-25%);">
-                    <option value="manual">Tùy chọn</option>
-                    <option value="best-selling">Bán chạy nhất</option>
-                    <option value="title-ascending">Tên A-Z</option>
-                    <option value="title-descending">Tên Z-A</option>
-                    <option value="price-ascending">Giá tăng dần</option>
-                    <option value="price-descending">Giá giảm dần</option>
-                    <option value="created-descending">Mới nhất</option>
-                    <option value="created-ascending">Cũ nhất</option>
+                <select name="SortBy" id="SortBy" style="transform: translateY(-25%);" onchange="updateOrder()">
+                    <option value="manual" {% if not order or order == 'manual' %} selected {% endif %}>Tùy chọn</option>
+                    <option value="best-selling" {% if order == 'best-selling' %} selected {% endif %}>Bán chạy nhất</option>
+                    <option value="title-ascending" {% if order == 'title-ascending' %} selected {% endif %}>Tên A-Z</option>
+                    <option value="title-descending" {% if order == 'title-descending' %} selected {% endif %}>Tên Z-A</option>
+                    <option value="price-ascending" {% if order == 'price-ascending' %} selected {% endif %}>Giá tăng dần</option>
+                    <option value="price-descending" {% if order == 'price-descending' %} selected {% endif %}>Giá giảm dần</option>
+                    <option value="created-descending" {% if order == 'created-descending' %} selected {% endif %}>Mới nhất</option>
+                    <option value="created-ascending" {% if order == 'created-ascending' %} selected {% endif %}>Cũ nhất</option>
                 </select>
             </div>
         </div>
@@ -27,7 +27,7 @@
         </div>
         <ul class="pagination mt-1 justify-content-center">
             {% for i in range(pages) %}
-            <li class="page-item"><a class="page-link {% if page|int == (i + 1) %}bg-primary text-white{% endif %}" href="{{ url_for('trang_chu', theloai=t.id|string, page=i+1) }}">{{ i + 1 }}</a></li>
+            <li class="page-item"><a class="page-link {% if page|int == (i + 1) %}bg-primary text-white{% endif %}" href="{{ url_for('trang_chu', theloai=t.id|string, page=i+1, price_range=price_range, order=order) }}">{{ i + 1 }}</a></li>
             {% endfor %}
         </ul>
     </div>

@@ -1,7 +1,9 @@
 {% extends 'layout/base.html' %}
 
 {% block title %}Trang chủ{% endblock %}
-
+{% block outside_content %}
+{% include 'layout/carousel.html' %}
+{% endblock %}
 {% block content %}
 {% include 'layout/sectionSach.html' %}
 {% endblock %}

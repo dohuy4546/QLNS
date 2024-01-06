@@ -94,7 +94,14 @@ function deleteCart(id, obj) {
 
 function confirmBuy() {
     if (confirm("Bạn chắc chắn mua hàng?") === true) {
-        let form = document.getElementById("form-thanh-toan")
-        form.submit()
+        let form = document.getElementById("form-thanh-toan");
+        let phone = document.getElementById("phone");
+        let address = document.getElementById("address");
+        if (phone.checkValidity() && address.checkValidity()){
+            form.submit();
+        }
+        else{
+            alert("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.");
+        }
     }
 }

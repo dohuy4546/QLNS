@@ -29,7 +29,7 @@
         </div>
         <ul class="pagination mt-1 justify-content-center">
             {% for i in range(pages) %}
-            <li class="page-item"><a class="page-link {% if page|int == (i + 1) %}bg-primary text-white{% endif %}" href="{{ url_for('trang_chu', kw=kw|string, page=i+1) }}">{{ i + 1 }}</a></li>
+            <li class="page-item"><a class="page-link {% if page|int == (i + 1) %}bg-primary text-white{% endif %}" href="{{ url_for('trang_chu', kw=kw|string, page=i+1, price_range=price_range, order=order) }}">{{ i + 1 }}</a></li>
             {% endfor %}
         </ul>
     </div>
