@@ -68,7 +68,7 @@
     {% for b in binhluan.values() %}
     <div class="comment ms-md-4 row">
         <h3>{{ b['tenkhachhang'] }}</h3>
-        <p>{{ b['ngaybinhluan'] }}</p>
+        <p class="date">{{ b['ngaybinhluan'] }}</p>
         <p>{{ b['noidung'] }}</p>
         <hr>
     </div>
@@ -81,4 +81,13 @@
         {% endfor %}
     </ul>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment-with-locales.min.js"></script>
+<script>
+    window.onload = function() {
+        let dates = document.getElementsByClassName("date");
+        for (let d of dates)
+            d.innerText = moment(d.innerText).locale("vi").fromNow()
+    }
+</script>
 {% endblock %}
