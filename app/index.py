@@ -164,7 +164,7 @@ def dang_xuat():
 @app.route('/otp', methods=['get', 'post'])
 def otp():
     referrer = request.referrer
-    if referrer and ('dangky' in referrer or 'quenmatkhau' in referrer):
+    if referrer and ('otp' in referrer or 'dangky' or 'quenmatkhau' in referrer):
         email = session['email']
         otp = session['otp']
         otp = str(otp)
@@ -339,10 +339,10 @@ def payment():
 
         vnp.requestData['vnp_CreateDate'] = datetime.now().strftime('%Y%m%d%H%M%S')
         vnp.requestData['vnp_IpAddr'] = ipaddr
-        vnp.requestData['vnp_ReturnUrl'] = 'http://127.0.0.1:5000/payment_return'  # Replace with your return URL
+        vnp.requestData['vnp_ReturnUrl'] = 'http://localhost:5000/payment_return'  # Replace with your return URL
         vnpay_payment_url = vnp.get_payment_url('https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
                                                 'FCSMFKVRWSMMEXPIZQAVFGPUXTGVYUGS')  # Replace with your payment URL and hash secret key
-        print(vnpay_payment_url)
+        # print(vnpay_payment_url)
 
         # Redirect to VNPAY
         return redirect(vnpay_payment_url)
@@ -365,15 +365,14 @@ def payment_return():
         order_desc = inputData['vnp_OrderInfo']
         vnp_TransactionNo = inputData['vnp_TransactionNo']
         vnp_ResponseCode = inputData['vnp_ResponseCode']
-
+        print(current_user)
         if vnp.validate_response(
                 "FCSMFKVRWSMMEXPIZQAVFGPUXTGVYUGS"):  # Thay YOUR_HASH_SECRET_KEY bằng secret key của bạn
             if vnp_ResponseCode == "00":
                 msg = (
                         "Đơn hàng " + order_id + " của bạn đã được thanh toán thành công.\n" + "Đơn hàng sẽ được gửi đến "
-                        + str(session['diachi']) + ".\n" + "Số điện thoại liên lạc của đơn hàng: "
-                        + str(
-                    session['sdt']) + "\n" + "Cảm ơn vì đã đặt hàng. Chúng tôi sẽ làm việc nhanh nhất có thể.")
+                        + str(session.get('diachi')) + ".\n" + "Số điện thoại liên lạc của đơn hàng: "
+                        + str(session.get('sdt')) + "\n" + "Cảm ơn vì đã đặt hàng. Chúng tôi sẽ làm việc nhanh nhất có thể.")
                 khachhang = dao.get_tk_khach_hang_by_id(current_user.id)
                 subject = "Xác nhận thông tin thanh toán đơn hàng"
                 utils.send_mail(khachhang.email, msg, subject)
@@ -454,6 +453,7 @@ def them_binh_luan():
 @login.user_loader
 def get_user(user_id):
     user_role = session.get('user_role')
+    print(user_role)
     if user_role == "ADMIN" or user_role == "NHANVIEN":
         return dao.get_tk_nhan_vien_by_id(user_id)
     elif user_role == "KHACHHANG":

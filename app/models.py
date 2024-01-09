@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Enum, CheckConstraint
@@ -158,7 +159,8 @@ class ChiTietHoaDon(BaseModel):
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # 1
+        pass
+        # db.create_all()  # 1
         # nxb1 = NhaXuatBan(tennhaxuatban='Kim Đồng')
         # tg1 = TacGia(tentacgia='Nguyễn Huệ')
         # db.session.add_all([nxb1, tg1])
@@ -167,6 +169,10 @@ if __name__ == '__main__':
         # import hashlib
         # tk_admin = TaiKhoanNhanVien(name='Nguyen Van A', username='admin', password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()), user_role=LoaiTaiKhoan.ADMIN, id=1)  # 3
         # db.session.add(tk_admin)
+        # db.session.commit()
+        # tk_khachhang = TaiKhoanKhachHang(email='dohuy4546@gmail.com',name='Đỗ Gia Huy', username='dohuy4546',
+        #           password=str(hashlib.md5('123'.encode('utf-8')).hexdigest()), user_role=LoaiTaiKhoan.KHACHHANG)
+        # db.session.add(tk_khachhang)
         # db.session.commit()
         # sach1 = Sach(id='VH1234', tensach='Van hoc truyen thong Viet Nam', gia=100000, soluongtonkho=200)
         # db.session.add(sach1)
