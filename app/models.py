@@ -148,7 +148,7 @@ class HoaDon(db.Model):
         CheckConstraint('taikhoankhachhang_id IS NOT NULL OR taikhoannhanvien_id IS NOT NULL'),
     )
     tongsoluong = Column(Integer, default=0)
-    tongtien = Column(Integer, default=0)
+    tongtien = Column(Float, default=0)
 
 class ChiTietHoaDon(BaseModel):
     hoadon_id = Column(String(6), ForeignKey(HoaDon.id), nullable=False)

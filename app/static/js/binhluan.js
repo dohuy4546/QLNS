@@ -20,9 +20,9 @@ function addReview(sach_id, khachhang_id) {
             return res.json();
         }).then(function(data) {
             if (data == false)
-                alert("Bạn cần phải mua sản phẩm mới có thể sử dụng tính năng này!")
+                alert("Bạn cần phải mua sản phẩm mới có thể sử dụng tính năng này!");
             else
-                window.location.href = window.location.pathname
+                window.location.href = window.location.pathname;
         });
 
     }

@@ -97,6 +97,9 @@ function confirmBuy() {
         let form = document.getElementById("form-thanh-toan");
         let phone = document.getElementById("phone");
         let address = document.getElementById("address");
+        if (!phone && !address){
+            form.submit();
+        }
         if (phone.checkValidity() && address.checkValidity()){
             form.submit();
         }

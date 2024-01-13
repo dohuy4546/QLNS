@@ -7,6 +7,7 @@ from app.models import Sach, TheLoai, Sach_TheLoai, TaiKhoanNhanVien, TaiKhoanKh
 from flask_login import logout_user, current_user
 from flask import redirect, request
 
+
 class MyAdminIndex(AdminIndexView):
     @expose('/')
     def index(self):
@@ -16,7 +17,6 @@ class MyAdminIndex(AdminIndexView):
 admin = Admin(app=app, name='QUẢN LÝ NHÀ SÁCH', template_mode='bootstrap4', index_view=MyAdminIndex())
 
 
-
 class AuthenticatedAdmin(ModelView):
     def is_accessible(self):
         return current_user.is_authenticated and current_user.user_role == LoaiTaiKhoan.ADMIN
@@ -24,12 +24,18 @@ class AuthenticatedAdmin(ModelView):
 
 class AuthenticatedUser(BaseView):
     def is_accessible(self):
-        return current_user.is_authenticated
+        return current_user.is_authenticated and (
+                current_user.user_role == LoaiTaiKhoan.NHANVIEN or current_user.user_role == LoaiTaiKhoan.ADMIN)
 
 
 class AuthenticatedAdminBaseView(BaseView):
     def is_accessible(self):
         return current_user.is_authenticated and current_user.user_role == LoaiTaiKhoan.ADMIN
+
+
+class AuthenticatedNhanVienBaseView(BaseView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.user_role == LoaiTaiKhoan.NHANVIEN
 
 
 class SachView(AuthenticatedAdmin):
@@ -59,6 +65,11 @@ class SachView(AuthenticatedAdmin):
 
 class TheLoaiView(AuthenticatedAdmin):
     column_list = ['id', 'tentheloai', 'ngaykhoitao']
+    column_labels = {
+        'id': 'ID',
+        'tentheloai': 'Tên thể loại',
+        'ngaykhoitao': 'Ngày khởi tạo'
+    }
     can_export = True
     column_searchable_list = ['tentheloai']
     column_filters = ['tentheloai']
@@ -69,13 +80,25 @@ class TheLoaiView(AuthenticatedAdmin):
 
 
 class Sach_TheLoaiView(AuthenticatedAdmin):
-    column_list = ['id', 'sach_id', 'theloai_id']
+    column_list = ['id', 'sach', 'theloai']
+    column_labels = {
+        'id': 'ID',
+        'sach_id': 'Sách ID',
+        'theloai_id': 'Thể loại ID'
+    }
     can_export = True
 
 
 class NhanVienView(AuthenticatedAdmin):
     column_list = ['id', 'CCCD', 'hoten', 'gioitinh', 'taikhoannhanvien']
     form_columns = ['CCCD', 'hoten', 'gioitinh']
+    column_labels = {
+        'id': 'ID',
+        'CCCD': 'CCCD',
+        'hoten': 'Họ và tên',
+        'gioitinh': 'Giới tính',
+        'taikhoannhanvien': 'Tài khoản nhân viên'
+    }
 
 
 class LogoutView(AuthenticatedAdminBaseView):
@@ -90,21 +113,42 @@ class StatsView(AuthenticatedUser):
     @expose("/")
     def index(self):
         kw = request.args.get('kw')
-
-        return self.render('admin/stats.html', stats=dao.revenue_stats(kw=kw), mon_stats=dao.revenue_mon_stats())
+        year = request.args.get('year')
+        if year:
+            year = int(year)
+        else:
+            year = 2024
+        return self.render('admin/stats.html', stats=dao.revenue_stats(kw=kw), mon_stats=dao.revenue_mon_stats(year=year),
+                           year_stats=dao.revenue_year_stats())
 
 
 class TaiKhoanNhanVienView(AuthenticatedAdmin):
+    form_columns = ['nhanvien', 'name', 'username', 'password', 'avatar', 'user_role']
+    column_labels = {
+        'nhanvien': 'Nhân viên',
+        'name': 'Họ và tên',
+        'username': 'Username',
+        'password': 'Password',
+        'avatar': 'Avatar'
+    }
+
     def on_model_change(self, form, model, is_created):
         # Hash the password when creating or updating the user
         if 'password' in request.form and request.form['password']:
             model.password = str(hashlib.md5(request.form['password'].encode('utf-8')).hexdigest())
 
 
+class ReturnView(AuthenticatedNhanVienBaseView):
+    @expose("/")
+    def returnview(self):
+        return redirect('/nhanvien')
+
+
 admin.add_view(SachView(Sach, db.session, name='Sách'))
-admin.add_view(TheLoaiView(TheLoai, db.session))
-admin.add_view(Sach_TheLoaiView(Sach_TheLoai, db.session))
-admin.add_view((TaiKhoanNhanVienView(TaiKhoanNhanVien, db.session)))
-admin.add_view((NhanVienView(NhanVien, db.session)))
+admin.add_view(TheLoaiView(TheLoai, db.session, name='Thể loại'))
+admin.add_view(Sach_TheLoaiView(Sach_TheLoai, db.session, name='Sách_Thể loại'))
+admin.add_view(TaiKhoanNhanVienView(TaiKhoanNhanVien, db.session, name='Tài khoản nhân viên'))
+admin.add_view((NhanVienView(NhanVien, db.session, name='Nhân viên')))
 admin.add_view(StatsView(name='Thống kê báo cáo'))
+admin.add_view(ReturnView(name='Quay về'))
 admin.add_view(LogoutView(name='Đăng xuất'))

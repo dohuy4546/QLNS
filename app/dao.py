@@ -1,6 +1,8 @@
+from flask import session
+
 from app.models import GioHang, Sach, TheLoai, Sach_TheLoai, TaiKhoanKhachHang, LoaiTaiKhoan, TheLoai, TaiKhoanNhanVien, \
     GioHang_Sach, HoaDon, DiaChi, SDT, ChiTietHoaDon, TacGia, NhaXuatBan, BinhLuan
-from app import app, db
+from app import app, db, utils
 from sqlalchemy import func
 import hashlib
 
@@ -15,24 +17,21 @@ def get_sach(kw=None, theloai_id=None, page=None, page_size=None, min_price=None
         sachs = sachs.filter(Sach.gia >= min_price)
     if max_price:
         sachs = sachs.filter(Sach.gia <= max_price)
-    if order == None:
-        sachs = sachs.order_by(Sach.ngayphathanh.desc())
-    elif order:
-        if order == 'best-selling':
-            sachs = sachs.outerjoin(ChiTietHoaDon, ChiTietHoaDon.sach_id.__eq__(Sach.id)).group_by(Sach.id).order_by(
+    if order and order == 'best-selling':
+        sachs = sachs.outerjoin(ChiTietHoaDon, ChiTietHoaDon.sach_id.__eq__(Sach.id)).group_by(Sach.id).order_by(
                 func.sum(ChiTietHoaDon.soluong).desc())
-        elif order == 'title-ascending':
-            sachs = sachs.order_by(Sach.tensach.asc())
-        elif order == 'title-descending':
-            sachs = sachs.order_by(Sach.tensach.desc())
-        elif order == 'price-ascending':
-            sachs = sachs.order_by(Sach.gia.asc())
-        elif order == 'price-descending':
-            sachs = sachs.order_by(Sach.gia.desc())
-        elif order == 'created-ascending':
-            sachs = sachs.order_by(Sach.ngayphathanh.asc())
-        elif order == 'created-descending':
-            sachs = sachs.order_by(Sach.ngayphathanh.desc())
+    elif order == 'title-ascending':
+        sachs = sachs.order_by(Sach.tensach.asc())
+    elif order == 'title-descending':
+        sachs = sachs.order_by(Sach.tensach.desc())
+    elif order == 'price-ascending':
+        sachs = sachs.order_by(Sach.gia.asc())
+    elif order == 'price-descending':
+        sachs = sachs.order_by(Sach.gia.desc())
+    elif order == 'created-ascending':
+        sachs = sachs.order_by(Sach.ngayphathanh.asc())
+    elif order == 'created-descending':
+        sachs = sachs.order_by(Sach.ngayphathanh.desc())
     if page:
         page = int(page)
         if page_size is None:
@@ -217,40 +216,55 @@ def check_hang_ton_kho(sach_id, soluong):
     return False
 
 
-def lap_hoa_don(id, taikhoankhachhang_id, diachi, sdt):
-    giohang = get_total_gio_hang(taikhoankhachhang_id)
-    checkdiachi = DiaChi.query.filter(DiaChi.diachi.__eq__(diachi)).filter(
-        DiaChi.taikhoankhachhang_id.__eq__(taikhoankhachhang_id)).first()
-    checksdt = SDT.query.filter(SDT.sdt.__eq__(sdt)).filter(
-        SDT.taikhoankhachhang_id.__eq__(taikhoankhachhang_id)).first()
-
-    if checkdiachi is None:
-        diachi = DiaChi(diachi=diachi, taikhoankhachhang_id=taikhoankhachhang_id)
-        db.session.add(diachi)
-    else:
-        diachi = checkdiachi
-    if checksdt is None:
-        sdt = SDT(sdt=sdt, taikhoankhachhang_id=taikhoankhachhang_id)
-        db.session.add(sdt)
-    else:
-        sdt = checksdt
-    db.session.commit()
-
-    hoadon = HoaDon(id=id, taikhoankhachhang_id=taikhoankhachhang_id, diachi=diachi, sdt=sdt,
-                    tongsoluong=giohang['total_quantity'], tongtien=giohang['total_amount'])
-    db.session.add(hoadon)
-    db.session.commit()
-    gioHang = get_gio_hang(taikhoankhachhang_id)
-    for g in gioHang.values():
-        chitiethoadon = ChiTietHoaDon(hoadon_id=id, sach_id=g['sach_id'], soluong=g['soluong'])
-        sach = Sach.query.get(g['sach_id'])
-        sach.soluongtonkho -= g['soluong']
-        db.session.add(chitiethoadon)
+def lap_hoa_don(id, taikhoankhachhang_id=None, taikhoannhanvien_id=None, diachi=None, sdt=None):
+    if taikhoannhanvien_id != None:
+        giosach = session.get('giosach')
+        giohang = utils.count_gio_sach(giosach)
+        hoadon = HoaDon(id=id, taikhoannhanvien_id=taikhoannhanvien_id,
+                        tongsoluong=giohang['total_quantity'], tongtien=giohang['total_amount'])
+        db.session.add(hoadon)
         db.session.commit()
-    gioHang = GioHang_Sach.query.filter(GioHang_Sach.giohang_id.__eq__(taikhoankhachhang_id)).all()
-    for g in gioHang:
-        db.session.delete(g)
-    db.session.commit()
+        for g in giosach.values():
+            chitiethoadon = ChiTietHoaDon(hoadon_id=id, sach_id=g['id'], soluong=g['quantity'])
+            sach = Sach.query.get(g['id'])
+            sach.soluongtonkho -= g['quantity']
+            db.session.add(chitiethoadon)
+            db.session.commit()
+        del session['giosach']
+    if taikhoankhachhang_id != None and diachi != None and sdt != None:
+        giohang = get_total_gio_hang(taikhoankhachhang_id)
+        checkdiachi = DiaChi.query.filter(DiaChi.diachi.__eq__(diachi)).filter(
+            DiaChi.taikhoankhachhang_id.__eq__(taikhoankhachhang_id)).first()
+        checksdt = SDT.query.filter(SDT.sdt.__eq__(sdt)).filter(
+            SDT.taikhoankhachhang_id.__eq__(taikhoankhachhang_id)).first()
+
+        if checkdiachi is None:
+            diachi = DiaChi(diachi=diachi, taikhoankhachhang_id=taikhoankhachhang_id)
+            db.session.add(diachi)
+        else:
+            diachi = checkdiachi
+        if checksdt is None:
+            sdt = SDT(sdt=sdt, taikhoankhachhang_id=taikhoankhachhang_id)
+            db.session.add(sdt)
+        else:
+            sdt = checksdt
+        db.session.commit()
+
+        hoadon = HoaDon(id=id, taikhoankhachhang_id=taikhoankhachhang_id, diachi=diachi, sdt=sdt,
+                        tongsoluong=giohang['total_quantity'], tongtien=giohang['total_amount'])
+        db.session.add(hoadon)
+        db.session.commit()
+        gioHang = get_gio_hang(taikhoankhachhang_id)
+        for g in gioHang.values():
+            chitiethoadon = ChiTietHoaDon(hoadon_id=id, sach_id=g['sach_id'], soluong=g['soluong'])
+            sach = Sach.query.get(g['sach_id'])
+            sach.soluongtonkho -= g['soluong']
+            db.session.add(chitiethoadon)
+            db.session.commit()
+        gioHang = GioHang_Sach.query.filter(GioHang_Sach.giohang_id.__eq__(taikhoankhachhang_id)).all()
+        for g in gioHang:
+            db.session.delete(g)
+        db.session.commit()
 
 
 def check_binh_luan(sach_id, khachhang_id):
@@ -319,6 +333,20 @@ def revenue_mon_stats(year=2024):
                       .group_by(func.extract('month', HoaDon.ngaykhoitao))
     return query.all()
 
+def revenue_year_stats():
+    query = db.session.query(func.extract('year', HoaDon.ngaykhoitao),
+                             func.sum(ChiTietHoaDon.soluong*Sach.gia))\
+                      .join(ChiTietHoaDon, ChiTietHoaDon.hoadon_id.__eq__(HoaDon.id))\
+                      .join(Sach, Sach.id.__eq__(ChiTietHoaDon.sach_id))\
+                      .group_by(func.extract('year', HoaDon.ngaykhoitao))
+    return query.all()
+
+def get_hoa_don_by_id(hoadon_id):
+    return HoaDon.query.get(hoadon_id)
+
+def get_chi_tiet_hoa_don_by_id(hoadon_id):
+    return ChiTietHoaDon.query.filter(ChiTietHoaDon.hoadon_id.__eq__(hoadon_id)).all()
+
 if __name__ == '__main__':
     with app.app_context():
-        print(get_so_luong_da_ban('VH127'))
+        print(revenue_year_stats())

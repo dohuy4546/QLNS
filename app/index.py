@@ -33,9 +33,11 @@ def trang_chu():
     if page is None:
         page = 1
     if kw:
-        sach = dao.get_sach(kw=kw, theloai_id=theloai_id, page=page, min_price=min_price, max_price=max_price, order=order)
+        sach = dao.get_sach(kw=kw, theloai_id=theloai_id, page=page, min_price=min_price, max_price=max_price,
+                            order=order)
         num = len(dao.get_sach(kw, theloai_id, min_price, max_price))
-        return render_template('timkiem.html', sach=sach, pages=math.ceil(num / page_size), page=page, kw=kw, price_range=price_range, order=order)
+        return render_template('timkiem.html', sach=sach, pages=math.ceil(num / page_size), page=page, kw=kw,
+                               price_range=price_range, order=order)
     if theloai_id is None:
         theloai = dao.get_the_loai()
         """
@@ -81,7 +83,8 @@ def trang_chu():
     theloai = dao.get_the_loai(theloai_id)
     num = len(dao.get_sach(kw=None, theloai_id=theloai_id, min_price=min_price, max_price=max_price, order=order))
 
-    return render_template('theloai.html', sach=sachs, t=theloai, pages=math.ceil(num / page_size), page=page, price_range=price_range, order=order)
+    return render_template('theloai.html', sach=sachs, t=theloai, pages=math.ceil(num / page_size), page=page,
+                           price_range=price_range, order=order)
 
 
 @app.route('/admin/login', methods=['post'])
@@ -161,6 +164,15 @@ def dang_xuat():
     return redirect('/')
 
 
+@app.route('/nhanvien/logout')
+def nhan_vien_dang_xuat():
+    logout_user()
+    del session['user_role']
+    if "giosach" in session:
+        del session['giosach']
+    return redirect('/nhanvien')
+
+
 @app.route('/otp', methods=['get', 'post'])
 def otp():
     referrer = request.referrer
@@ -225,7 +237,7 @@ def quen_mat_khau():
         email = request.form.get("email")
         check = dao.get_tk_khach_hang_by_email(email)
         if not check:
-            return redirect(url_for('quen_mat_khau', msg= "Tài khoản không tồn tại!"))
+            return redirect(url_for('quen_mat_khau', msg="Tài khoản không tồn tại!"))
         session['otp'] = otp
         session['email'] = email
         return redirect(url_for("otp", next="/quenmatkhau"))
@@ -233,6 +245,7 @@ def quen_mat_khau():
     if 'doimatkhau' in session and session['doimatkhau'] is True:
         doimatkhau = True
     return render_template("quenmatkhau.html", doimatkhau=doimatkhau, msg=msg)
+
 
 @app.route("/doimatkhau", methods=['post'])
 def doi_mat_khau():
@@ -372,7 +385,8 @@ def payment_return():
                 msg = (
                         "Đơn hàng " + order_id + " của bạn đã được thanh toán thành công.\n" + "Đơn hàng sẽ được gửi đến "
                         + str(session.get('diachi')) + ".\n" + "Số điện thoại liên lạc của đơn hàng: "
-                        + str(session.get('sdt')) + "\n" + "Cảm ơn vì đã đặt hàng. Chúng tôi sẽ làm việc nhanh nhất có thể.")
+                        + str(
+                    session.get('sdt')) + "\n" + "Cảm ơn vì đã đặt hàng. Chúng tôi sẽ làm việc nhanh nhất có thể.")
                 khachhang = dao.get_tk_khach_hang_by_id(current_user.id)
                 subject = "Xác nhận thông tin thanh toán đơn hàng"
                 utils.send_mail(khachhang.email, msg, subject)
@@ -434,7 +448,8 @@ def chi_tiet_san_pham(sach_id):
     num = len(dao.get_binh_luan(sach_id))
     soluongdaban = dao.get_so_luong_da_ban(sach_id)
     return render_template('chitietsanpham.html', sach=sach, tacgia=tacgia, nhaxuatban=nhaxuatban, theLoai=theloai,
-                           binhluan=binhluan, pages=math.ceil(num / page_size), page=page, soluongbinhluan=num, soluongdaban=soluongdaban)
+                           binhluan=binhluan, pages=math.ceil(num / page_size), page=page, soluongbinhluan=num,
+                           soluongdaban=soluongdaban)
 
 
 @app.route('/api/binhluan', methods=['post'])
@@ -450,10 +465,67 @@ def them_binh_luan():
     return jsonify(check)
 
 
+@app.route('/nhanvien')
+def nhan_vien():
+    msg = request.args.get('msg')
+    kw = request.args.get('kw')
+    page = request.args.get('page')
+    if not page:
+        page = 1
+    sach = dao.get_sach(kw=kw, page=page, page_size=1)
+    pages = len(dao.get_sach(kw=kw))
+    giosach = None
+    if "giosach" in session:
+        giosach = session.get('giosach')
+    return render_template('nhanvien.html', sach=sach, giosachsach=giosach,
+                           total_gio_sach=utils.count_gio_sach(giosach), page=page, kw=kw, pages=pages, msg=msg)
+
+
+@app.route("/api/giosach", methods=['post'])
+def add_gio_sach():
+    data = request.json
+    giosach = session.get('giosach')
+    if giosach is None:
+        giosach = {}
+
+    id = str(data.get("id"))
+    if id in giosach:
+        giosach[id]['quantity'] += 1
+    else:
+        giosach[id] = {
+            "id": id,
+            "name": data.get("name"),
+            "price": data.get("price"),
+            "quantity": 1
+        }
+    session['giosach'] = giosach
+    return jsonify(utils.count_gio_sach(giosach))
+
+
+@app.route("/api/giosach/<product_id>", methods=['put'])
+def update_gio_sach(product_id):
+    giosach = session.get('giosach')
+    if giosach and product_id in giosach:
+        quantity = request.json.get('quantity')
+        giosach[product_id]['quantity'] = int(quantity)
+
+    session['giosach'] = giosach
+    return jsonify(utils.count_gio_sach(giosach))
+
+
+@app.route("/api/giosach/<product_id>", methods=['delete'])
+def delete_gio_sach(product_id):
+    giosach = session.get('giosach')
+    if giosach and product_id in giosach:
+        del giosach[product_id]
+
+    session['giosach'] = giosach
+    return jsonify(utils.count_gio_sach(giosach))
+
+
 @login.user_loader
 def get_user(user_id):
     user_role = session.get('user_role')
-    print(user_role)
     if user_role == "ADMIN" or user_role == "NHANVIEN":
         return dao.get_tk_nhan_vien_by_id(user_id)
     elif user_role == "KHACHHANG":
@@ -471,6 +543,56 @@ def common_response():
         'theloai': dao.get_the_loai()
     }
 
+
+@app.route('/nhanvien/login', methods=['post'])
+def nhanvien_login():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    user = dao.auth_user(username=username, password=password, loaitaikhoan=LoaiTaiKhoan.NHANVIEN, email=None)
+    if user:
+        login_user(user=user)
+        session['user_role'] = "NHANVIEN"
+    return redirect('/nhanvien')
+
+@app.route("/nhanvien/payment", methods=['post'])
+@login_required
+def lap_hoa_don():
+    giohang = session.get('giosach')
+    for g in giohang.values():
+        check = dao.check_hang_ton_kho(g['id'], g['quantity'])
+        if check is False:
+            msg = "Có vẻ đã có lỗi xảy ra. Sách " + str(g['name']) + " không đủ hàng tồn kho."
+            return redirect(url_for("nhan_vien", msg=msg))
+    random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
+    hoadon_id = str(current_user.id) + random_string
+    nhanvien = dao.get_tk_nhan_vien_by_id(current_user.id)
+    dao.lap_hoa_don(id=hoadon_id, taikhoannhanvien_id=current_user.id)
+    session['hoadon_id'] = hoadon_id
+    return redirect('/hoadon')
+
+@app.route("/hoadon")
+def hoa_don():
+    referrer = request.referrer
+    if referrer and 'nhanvien' in referrer:
+        hoadon = None
+        sachs = None
+        if 'hoadon_id' in session and session['hoadon_id']:
+            hoadon_id = session.get('hoadon_id')
+            del session['hoadon_id']
+            hoadon = dao.get_hoa_don_by_id(hoadon_id)
+            chitiethoadon = dao.get_chi_tiet_hoa_don_by_id(hoadon_id)
+            sachs = {}
+            for g in chitiethoadon:
+                sach = dao.get_sach_by_id(g.sach_id)
+                sachs[g.id] = {
+                    "id": g.sach_id,
+                    "tensach": sach.tensach,
+                    "gia": sach.gia,
+                    "soluong": g.soluong
+                }
+        return render_template("hoadon.html", hoadon=hoadon, chitiethoadon=sachs)
+    else:
+        return "Có lỗi xảy ra"
 
 if __name__ == '__main__':
     from app import admin

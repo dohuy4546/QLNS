@@ -3,7 +3,7 @@
 <link rel="icon" href="{{url_for('static', filename='asset/favicon.ico')}}" type="image/x-icon">
 {% endblock %}
 {% block body %}
-{% if current_user.is_authenticated and current_user.user_role|string == "LoaiTaiKhoan.ADMIN" %}
+{% if current_user.is_authenticated and (current_user.user_role|string == "LoaiTaiKhoan.ADMIN" or current_user.user_role|string == "LoaiTaiKhoan.NHANVIEN") %}
 <h1 class="text-center text-primary">CHÀO MỪNG ĐẾN TRANG QUẢN TRỊ!</h1>
 <h2 class="text-primary">Chào {{ current_user.name }}!</h2>
 <div class="row">

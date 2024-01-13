@@ -20,7 +20,7 @@ def send_mail(mailto, msg, subject):
         print('Check your email ;)')
 
 
-def count_cart(cart):
+def count_gio_sach(cart):
     total_amount, total_quantiy = 0, 0
 
     if cart:
